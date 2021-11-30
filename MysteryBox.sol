@@ -5,10 +5,13 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contr
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/introspection/ERC165.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol";
+
+import "./MyToken.sol";
 
 contract MysteryBox is IERC1155Receiver, ERC165, VRFConsumerBase {
-    // Contract of the Rewards
-    IERC1155 Token = IERC1155(0x36031F8d2aDA94739B191dc889fb5F538f8d3FAC);
+    IERC1155 Token = IERC1155(0x036d4138Ef38a82b79A41dC99b6625851b5eb53D);
+    GLDToken public myToken;
 
     mapping(bytes32 => address) public requestIdToSender;
     mapping(bytes32 => uint256) public requestIdToTokenId;
@@ -19,12 +22,13 @@ contract MysteryBox is IERC1155Receiver, ERC165, VRFConsumerBase {
     uint256 public randomResult = 0;
     uint256 public randomReward = 0;
 
-    constructor()
+    constructor(GLDToken _myToken)
         VRFConsumerBase(
             0xa555fC018435bef5A13C6c6870a9d4C11DEC329C, // VRF Coordinator
             0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06 // LINK Token
         )
     {
+        myToken = _myToken;
         keyHash = 0xcaf3c3727e033261d383b315559476f48034c13b18f8cafed4d871abe5049186;
         fee = 0.1 * 10**18; // 0.1 LINK (Varies by network)
     }
@@ -106,12 +110,16 @@ contract MysteryBox is IERC1155Receiver, ERC165, VRFConsumerBase {
             Token.balanceOf(address(this), reward) > 0,
             "Not enough rewards"
         );
-        Token.safeTransferFrom(
-            address(this),
-            requestIdToSender[requestId],
-            reward,
-            1,
-            ""
-        );
+        if (reward < 3) {
+            Token.safeTransferFrom(
+                address(this),
+                requestIdToSender[requestId],
+                reward,
+                1,
+                ""
+            );
+        } else {
+            myToken.transfer(requestIdToSender[requestId], 10);
+        }
     }
 }
