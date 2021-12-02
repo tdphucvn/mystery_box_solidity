@@ -16,6 +16,5 @@ contract Rewards is ERC1155 {
         _mint(msg.sender, COMMON, 100, "");
         _mint(msg.sender, RARE, 100, "");
         _mint(msg.sender, EXCLUSIVE, 100, "");
-        _mint(msg.sender, ADEN, 100, "");
     }
 }
